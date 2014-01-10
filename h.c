@@ -10,6 +10,7 @@
 #include <string>
 #include <sys/wait.h>
 #include <time.h>
+#include <locale.h>
 
 #include "c.h"
 #include "w.h"
@@ -147,7 +148,11 @@ int init_allwin()
             ret = -1;
             break;
         }
-        scrollok(win[i].win, TRUE);
+        if (strcmp(win[i].name, "L1") == 0) {
+            scrollok(win[i].win, TRUE);
+        } else {
+            clearok(win[i].win, TRUE);
+        }
         windows.insert(Windows::value_type(win[i].name, win[i]));
 
         Win frame;
@@ -180,17 +185,82 @@ void update_allwin()
     unlock_L1();
 }
 
+void clear_R2()
+{
+    Win *win = get_win("R2");
+    if (NULL == win) {
+        return;
+    }
+    wclear(win->win);
+    wrefresh(win->win);
+}
+
+void show_weibo()
+{
+    FILE *fp = NULL;
+    char buf[1024] = {0};\
+    char *ret = NULL;
+
+    fp = fopen("./weibo", "r");
+    
+    Win *win = get_win("R2");
+    if (NULL == win) {
+        return;
+    }
+    do {
+        ret = fgets(buf, sizeof(buf), fp);
+        wprintw(win->win, "%s\n", buf);
+    } while (ret != NULL);
+    wrefresh(win->win);
+    
+    fclose(fp);
+    fp = NULL;
+}
+
+void play_game()
+{
+
+}
+
+void process_command(char *cmd)
+{
+    if (strncmp(cmd, "weibo", 5) == 0) {
+        show_weibo();
+    } else if (strncmp(cmd, "game", 4) == 0){
+        play_game();
+    } else if (strncmp(cmd, "clear", 5) == 0){
+        clear_R2();
+    } else if (strncmp(cmd, "clean", 5) == 0){
+        clear_R2();
+    }
+}
+
 // return value: 0:running; not 0:quit;
 int on_keypress()
 {
     int ch = 0;
+    static char keybuf[32] = {0};
+    static int cursor = 0;
+
     Win *win = get_win("RCMD");
     if (NULL == win) {
         return 0;
     }
 
     ch = readch();
-    waddch(win->win, ch);
+    keybuf[cursor++] = ch;
+    if (ch == '\n' || cursor >= sizeof(keybuf) - 1) {
+        cursor = 0;
+        process_command(keybuf);
+        memset(keybuf, 0, sizeof(keybuf));
+        werase(win->win);
+        wclear(win->win);
+        mvwaddch(win->win, 1, 1, '> ');
+        wrefresh(win->win);
+    } else {
+        waddch(win->win, ch);
+        wrefresh(win->win);
+    }
 
     return ch != 'q';
 }
@@ -202,9 +272,10 @@ void cleanup_allwin()
 
 int work_thread_start()
 {
-    Win *win = get_win("L1");
+    Win *L1 = get_win("L1");
+    Win *R1 = get_win("R1");
 
-    start_work_thread(win);
+    start_work_thread(L1, R1);
     return 0;
 }
 
@@ -228,6 +299,8 @@ int main_loop()
 int main(int argc, char *argv[])
 {
     int ret = 0;
+
+    setlocale(LC_ALL,"");
 
     init_keyboard();
     initscr();

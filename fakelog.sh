@@ -1,4 +1,5 @@
-while [ 1 ]; do  
+for i in $(seq 1 2 10)
+do
     echo "[T] Jan 06 18:27:3262014] [werror] child process 31285 still did not exit, sending a SIGKILL" >> /usr/local/httpd/logs/error_log
     echo "[T] Jan 06 18:27:3262014] [werror] child process 31285 still did not exit, sending a SIGKILL" >> /usr/local/httpd/logs/error_log
     echo "[T] Jan 06 18:27:3262014] [warning] child process 31285 still did not exit, sending a SIGKILL" >> /usr/local/httpd/logs/error_log

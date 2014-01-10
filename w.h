@@ -5,7 +5,9 @@
 
 void lock_L1();
 void unlock_L1();
-int start_work_thread(Win *win);
+void lock_R1();
+void unlock_R1();
+int start_work_thread(Win *L1, Win *R1);
 
 int start_http_log();
 int start_http_stat();

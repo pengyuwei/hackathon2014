@@ -8,7 +8,9 @@
 
 
 pthread_t tid_http_log;
-pthread_mutex_t lock_http;
+pthread_t tid_http_stat;
+pthread_mutex_t _lock_L1;
+pthread_mutex_t _lock_R1;
 
 #define CMD_HTTP_LOG "tail -n 1 /usr/local/httpd/logs/error_log"
 #define FILE_HTTP_LOG "/usr/local/httpd/logs/access_log"
@@ -16,32 +18,57 @@ pthread_mutex_t lock_http;
 
 static int running = 1;
 static Win *win_L1 = NULL;
+static Win *win_R1 = NULL;
 
 
-void update_win(char *log)
+void update_win(Win *win, char *log, int clean)
 {
-    Win *win = win_L1;
+    int len = 0;
+    int i = 0;
+
+    len = strlen(log);
+    for (i=len - 1; i>0 && len>0; i--) {
+        if (log[i] == '\n' || log[i] == '\r') {
+            log[i] = '\0';
+            continue;
+        }
+        break;
+    }
     if (NULL == win) {
-        printf("%s\n", log);
+        printf("%s[%d]\n", log, (int)strlen(log));
         return;
     }
 
-    if (strlen(log) >= win->locate.w) {
+    len = strlen(log);
+    if (len >= win->locate.w) {
         log[win->locate.w] = '\0';
     }
 
-    wprintw(win->win, "%s", log);
+    if (clean) {
+        wclear(win->win);
+    }
+
+    wprintw(win->win, "%s\n", log);
     wrefresh(win->win);
 }
 
+void lock_R1()
+{
+    pthread_mutex_lock(&_lock_R1);
+}
+
+void unlock_R1()
+{
+    pthread_mutex_unlock(&_lock_R1);
+}
 void lock_L1()
 {
-    pthread_mutex_lock(&lock_http);
+    pthread_mutex_lock(&_lock_L1);
 }
 
 void unlock_L1()
 {
-    pthread_mutex_unlock(&lock_http);
+    pthread_mutex_unlock(&_lock_L1);
 }
 
 void *http_log(void *arg)
@@ -50,6 +77,12 @@ void *http_log(void *arg)
     FILE *fp = NULL;
     char buf[1024] = {0};\
     int lastpos = 0;
+
+    fp = fopen(FILE_HTTP_LOG, "r");
+    fseek(fp, lastpos, SEEK_END);
+    lastpos = ftell(fp);
+    fclose(fp);
+    fp = NULL;
 
     while(running) {
         if (NULL == fp) {
@@ -65,7 +98,7 @@ void *http_log(void *arg)
             continue;
         }
         lock_L1();
-        update_win(buf);
+        update_win(win_L1, buf, 0);
         unlock_L1();
     }
     
@@ -100,6 +133,26 @@ quit:
     return (void *)0;
 }
 
+void *http_stat(void *arg)
+{
+    FILE *fp = NULL;
+    char buf[256] = {0};
+    int ret = 0;
+
+    while(running) {
+        fp = popen(CMD_HTTP_STAT, "r");
+        ret = fread(buf, sizeof(char), sizeof(buf), fp);
+        lock_R1();
+        update_win(win_R1, buf, 0);
+        unlock_R1();
+        pclose(fp);
+        fp = NULL;
+        sleep(10);
+    }
+
+    return (void *)0;
+}
+
 void wait_work_thread()
 {
     int ret = 0;
@@ -110,11 +163,12 @@ void wait_work_thread()
     }
 }
 
-int start_work_thread(Win *win)
+int start_work_thread(Win *L1, Win *R1)
 {
     int ret = 0;
 
-    win_L1 = win;
+    win_L1 = L1;
+    win_R1 = R1;
     
     start_http_log();
     start_http_stat();
@@ -135,6 +189,8 @@ int start_http_log()
 int start_http_stat()
 {
     int ret = 0;
+
+    ret = pthread_create(&tid_http_stat, NULL, http_stat, NULL);
     
     return ret;
 }
@@ -149,12 +205,12 @@ int start_free_mem()
 #ifdef DEBUG_MAIN
 int main()
 {  
-    start_work_thread(NULL);
+    start_work_thread(NULL, NULL);
     
     sleep(3);
     running = 0;
     
-    wait_work_thread();
+    // wait_work_thread();
     
     return 0;
 }
