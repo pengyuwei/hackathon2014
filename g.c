@@ -180,7 +180,7 @@ static void gameover()
     mvwaddstr(win_disp->win, pos++, 1, "Game Over!");
     mvwaddstr(win_disp->win, pos++, 1, "No.  name   score ");
     mvwaddstr(win_disp->win, pos++, 1, "------------------");
-    mvwaddstr(win_disp->win, pos++, 1 ,"1.   0xFF      160");
+    mvwaddstr(win_disp->win, pos++, 1 ,"1.   0xFF      190");
     mvwaddstr(win_disp->win, pos++, 1 ,"2.   0xFF      120");
     mvwaddstr(win_disp->win, pos++, 1 ,"3.   ....    .....");
     mvwaddstr(win_disp->win, pos++, 1 ,"4.   ....    .....");
