@@ -1,5 +1,6 @@
 for i in $(seq 1 2 10)
 do
+    echo '2573:[Sat Jan 11 15:18:46 2013] [notice] child pid 14582 exit signal Segmentation fault (11), possible coredump in /saetmp/core/' >> /usr/local/httpd/logs/error_log
     echo "[T] Jan 06 18:27:3262014] [werror] child process 31285 still did not exit, sending a SIGKILL" >> /usr/local/httpd/logs/error_log
     echo "[T] Jan 06 18:27:3262014] [werror] child process 31285 still did not exit, sending a SIGKILL" >> /usr/local/httpd/logs/error_log
     echo "[T] Jan 06 18:27:3262014] [warning] child process 31285 still did not exit, sending a SIGKILL" >> /usr/local/httpd/logs/error_log

@@ -78,6 +78,7 @@ void *http_log(void *arg)
     char buf[1024] = {0};\
     int lastpos = 0;
 
+    // TODO: Read from config file
     fp = fopen(FILE_HTTP_LOG, "r");
     fseek(fp, lastpos, SEEK_END);
     lastpos = ftell(fp);
@@ -92,6 +93,7 @@ void *http_log(void *arg)
         }
         ret = fgets(buf, sizeof(buf), fp);
         lastpos = ftell(fp);
+        // TODO:Save to config file
         if (NULL == ret) {
             fclose(fp);
             fp = NULL;
@@ -143,7 +145,7 @@ void *http_stat(void *arg)
         fp = popen(CMD_HTTP_STAT, "r");
         ret = fread(buf, sizeof(char), sizeof(buf), fp);
         lock_R1();
-        update_win(win_R1, buf, 0);
+        update_win(win_R1, buf, 1);
         unlock_R1();
         pclose(fp);
         fp = NULL;

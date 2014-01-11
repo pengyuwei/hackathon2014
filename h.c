@@ -14,6 +14,7 @@
 
 #include "c.h"
 #include "w.h"
+#include "g.h"
 
 /*
 by pyw 2014-1-9
@@ -219,14 +220,24 @@ void show_weibo()
 
 void play_game()
 {
+    Win *disp= get_win("R2");
+    if (NULL == disp) {
+        return;
+    }
+    Win *input = get_win("RCMD");
+    if (NULL == input) {
+        return;
+    }
 
+    game_main_loop(disp, input);
 }
 
-void process_command(char *cmd)
+static void process_command(char *cmd)
 {
     if (strncmp(cmd, "weibo", 5) == 0) {
         show_weibo();
     } else if (strncmp(cmd, "game", 4) == 0){
+        clear_R2();
         play_game();
     } else if (strncmp(cmd, "clear", 5) == 0){
         clear_R2();
@@ -236,7 +247,7 @@ void process_command(char *cmd)
 }
 
 // return value: 0:running; not 0:quit;
-int on_keypress()
+static int on_keypress()
 {
     int ch = 0;
     static char keybuf[32] = {0};
@@ -249,13 +260,13 @@ int on_keypress()
 
     ch = readch();
     keybuf[cursor++] = ch;
-    if (ch == '\n' || cursor >= sizeof(keybuf) - 1) {
+    if (ch == '\n' || cursor >= (int)sizeof(keybuf) - 1) {
         cursor = 0;
         process_command(keybuf);
         memset(keybuf, 0, sizeof(keybuf));
         werase(win->win);
         wclear(win->win);
-        mvwaddch(win->win, 1, 1, '> ');
+        mvwaddch(win->win, 1, 1, '>');
         wrefresh(win->win);
     } else {
         waddch(win->win, ch);

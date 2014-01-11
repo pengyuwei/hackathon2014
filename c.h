@@ -1,6 +1,8 @@
 #ifndef _C_H_
 #define _C_H_
 
+#include <curses.h>
+
 typedef struct _Locate
 {
     int x;
