@@ -17,6 +17,7 @@
 Win *win_disp = NULL;
 Win *win_input = NULL;
 static int level = 1;
+static int round = 0;
 
 typedef struct _Object
 {
@@ -24,6 +25,7 @@ typedef struct _Object
     int y;
     int life;
     char face;
+    int score;
 } Object;
 typedef std::vector<Object> Monsters;
 Monsters monsters;
@@ -40,6 +42,9 @@ static void draw()
         return;
     }
     wclear(win_disp->win);
+    char msg[16] = {0};
+    sprintf(msg, "Level %d Round:%d", level, round);
+    mvwaddstr(win_disp->win, 0, 1, msg);
 
     mvwaddch(win_disp->win, me.y, me.x, me.face);
     for (unsigned i=0; i<monsters.size(); i++) {
@@ -98,7 +103,7 @@ static void do_round(char *key)
 {
     wclear(win_disp->win);
 
-    for (int i=0; i<strlen(key); i++) {
+    for (unsigned i=0; i<strlen(key); i++) {
         char cmd = key[i];
         switch(cmd) {
             case 'w':
@@ -134,6 +139,7 @@ static void do_round(char *key)
         }
         draw();
         monsters_round();
+        usleep(300);
     }
 }
 
@@ -143,12 +149,14 @@ static int wait_user_cmd(char *keybuf)
     int ch = 0;
     int cursor = 0;
 
-    do {
+    while(1) {
         ch = readch();
         keybuf[cursor++] = ch;
         if (ch == '\n' || cursor >= (int)sizeof(keybuf) - 1) {
+            wclear(win_input->win);
+            wrefresh(win_input->win);
             return cursor;
-        } else if (ch == KEY_BACKSPACE) {
+        } else if (ch == KEY_BACKSPACE || ch == 127) {
             keybuf[cursor] = '\0';
             cursor--;
             if (cursor < 0) {
@@ -160,7 +168,7 @@ static int wait_user_cmd(char *keybuf)
             mvwaddstr(win_input->win, 1, 1, keybuf);
             wrefresh(win_input->win);
         }
-    } while (strstr(keybuf, "quit") == NULL);
+    };
 
     return cursor;
 }
@@ -176,13 +184,19 @@ void game_main_loop(Win *disp, Win *input)
     me.y = win_disp->locate.h / 2;
     me.life = 1;
     me.face = 'X';
+    me.score = 0;
+    round = 0;
     init_game(level);
 
     do {
-        draw();
+        round++;
         memset(keybuf, 0, sizeof(keybuf));
+        draw();
         wait_user_cmd(keybuf);
         do_round(keybuf);
+        if (keybuf[0] == 'q') {
+            break;
+        }
     } while (strncmp(keybuf, "quit", 4) != 0);
 }
 
