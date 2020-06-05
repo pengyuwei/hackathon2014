@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <curses.h>
 #include <term.h>
@@ -12,9 +13,8 @@
 #include <time.h>
 #include <locale.h>
 
-#include "c.h"
-#include "w.h"
-#include "g.h"
+#include "win.h"
+#include "game.h"
 
 /*
 by pyw 2014-1-9
@@ -140,7 +140,6 @@ int init_allwin()
             {{100, 10, 20, 20}, {0.8, 0.4, 0.2, 0.4}, "R2", "", NULL}, 
             {{100, 15, 20, 20}, {0.8, 0.8, 0.2, 0.2}, "RCMD", "", NULL}, 
             };
-
 
     for (i=0; i<4; i++) {
         win[i].win = newwin(win[i].locate.y, win[i].locate.x, 0, 0);
@@ -281,14 +280,14 @@ void cleanup_allwin()
 
 }
 
-int work_thread_start()
-{
-    Win *L1 = get_win("L1");
-    Win *R1 = get_win("R1");
+// int work_thread_start()
+// {
+//     Win *L1 = get_win("L1");
+//     Win *R1 = get_win("R1");
 
-    start_work_thread(L1, R1);
-    return 0;
-}
+//     start_work_thread(L1, R1);
+//     return 0;
+// }
 
 int main_loop()
 {
@@ -321,7 +320,7 @@ int main(int argc, char *argv[])
 
     signal(SIGWINCH, sig_winch);
 
-    work_thread_start();
+    // work_thread_start();
     main_loop();
 
     close_keyboard();

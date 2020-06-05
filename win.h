@@ -1,5 +1,5 @@
-#ifndef _C_H_
-#define _C_H_
+#ifndef _WIN_H
+#define _WIN_H
 
 #include <curses.h>
 
@@ -34,5 +34,10 @@ void close_keyboard();
 void cleanup();
 int kbhit();
 int readch();
+
+void lock_L1();
+void unlock_L1();
+void lock_R1();
+void unlock_R1();
 
 #endif

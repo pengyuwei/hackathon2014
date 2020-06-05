@@ -2,9 +2,11 @@
 #include <string.h>
 #include <string>
 #include <vector>
+#include <unistd.h>
+#include <stdio.h>
 
-#include "c.h"
-#include "g.h"
+#include "win.h"
+#include "game.h"
 
 /*
  * A text game for Linux
@@ -46,10 +48,10 @@ static void draw_me()
     mvwaddch(win_disp->win, me.y, me.x, me.face);
 }
 
-static void draw_refresh()
-{
-    wrefresh(win_disp->win);
-}
+// static void draw_refresh()
+// {
+//     wrefresh(win_disp->win);
+// }
 
 static void draw()
 {
@@ -215,7 +217,7 @@ static int do_round(char *key)
         m->score += len*10;
     }
 
-    for (i=0; i<len; i++) {
+    for (i=0; i<(unsigned)len; i++) {
         char cmd = key[i];
         switch(cmd) {
             case 'w':
@@ -281,7 +283,7 @@ static int wait_user_cmd(char *keybuf, size_t buflen)
     while(1) {
         ch = readch();
         keybuf[cursor++] = ch;
-        if (ch == '\n' || cursor >= buflen - 1) {
+        if (ch == '\n' || (size_t)cursor >= buflen - 1) {
             wclear(win_input->win);
             wrefresh(win_input->win);
             return cursor;
