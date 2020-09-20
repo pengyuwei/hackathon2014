@@ -2,6 +2,7 @@
 #include <string.h>
 #include <string>
 #include <vector>
+#include <unistd.h>
 
 #include "c.h"
 #include "g.h"
@@ -46,10 +47,10 @@ static void draw_me()
     mvwaddch(win_disp->win, me.y, me.x, me.face);
 }
 
-static void draw_refresh()
-{
-    wrefresh(win_disp->win);
-}
+// static void draw_refresh()
+// {
+//     wrefresh(win_disp->win);
+// }
 
 static void draw()
 {

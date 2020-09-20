@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <locale.h>
+#include <unistd.h>
 
 #include "c.h"
 #include "w.h"
@@ -144,7 +145,7 @@ int init_allwin()
 
     for (i=0; i<4; i++) {
         win[i].win = newwin(win[i].locate.y, win[i].locate.x, 0, 0);
-        if (NULL == win) {
+        if (NULL == win[i].win) {
             printf("Init failed.\n");
             ret = -1;
             break;
